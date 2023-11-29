@@ -25,7 +25,7 @@ function rgb_to_r_g_b(colour,alpha)
 end
 
 function draw_percent_bar(cr, x, y, r, g, b, a, percent, max_len)
-	print('args', x, y, r, g, b, a, percent, max_len)
+	-- print('args', x, y, r, g, b, a, percent, max_len)
 	cairo_set_source_rgba(cr, r, g, b, a)
 	cairo_set_line_width(cr,2)
 	cairo_rectangle(cr, x, y, max_len, 10)
@@ -38,21 +38,43 @@ function draw_percent_bar(cr, x, y, r, g, b, a, percent, max_len)
 
 end
 
+
 function conky_dummy()
-	print('dummy')
-	if conky_window==nil then return end
-	local cs=cairo_xlib_surface_create(conky_window.display,conky_window.drawable,conky_window.visual, conky_window.width,conky_window.height)
+	if conky_window == nil then return end
+
+	local num_cpus = tonumber(conky_parse('${exec nproc}'))
+	if num_cpus == nil then return end
+
+	local cs = cairo_xlib_surface_create(conky_window.display, conky_window.drawable, conky_window.visual, conky_window.width, conky_window.height)
+	local cr = cairo_create(cs)
+
+	print('dummy', num_cpus)
+
+
+
+	-- result = conky_parse('${cpu cpu0}')
+	-- print('>>>>', result, type(result))
+	s = 0
+	for i = 1, num_cpus do
+		local cpu_core_usgae = conky_parse(string.format('${cpu cpu%i}', i)) 
+		print('cpu core', i, cpu_core_usgae)
+		s = s + cpu_core_usgae
+	end
+
+	local cpu_usage = tonumber(conky_parse('${cpu cpu0}'))
+	print('cpu usage', cpu_usage, s / num_cpus)
+
+
 	
-	local cr=cairo_create(cs)
 
 
 	-- cairo_select_font_face(cr, 'Monaco')
 
-	mem_percent_str = conky_parse('${memperc}')
+	local mem_percent_str = conky_parse('${memperc}')
 
-	mem_percent_stats_str = string.format('mem usage: %s', mem_percent_str)
+	local mem_percent_stats_str = string.format('mem usage: %s', mem_percent_str)
 	print(mem_percent_stats_str)
-	mem_percent_num = tonumber(mem_percent_str)
+	local mem_percent_num = tonumber(mem_percent_str)
 
 	cairo_set_font_face(cr, "Monaco")
 	cairo_move_to(cr, 10, 20)
@@ -60,10 +82,10 @@ function conky_dummy()
 	cairo_set_font_size(cr, 28)
 	cairo_show_text(cr, mem_percent_stats_str)
 
-	max_len = 200
-	args = rgb_to_r_g_b(0xff0000, 1)
-	print(args, type(args))
-	draw_percent_bar(cr, 10, 30, rgb_to_r_g_b(0xff0000, 1), mem_percent_num, max_len)
+	local max_len = 200
+	-- local args = rgb_to_r_g_b(0xff0000, 1)
+	-- print(args, type(args))
+	draw_percent_bar(cr, 10, 30, 1, 0, 0, 1, mem_percent_num, max_len)
 
 	-- cpu0_percent_str = conky_parse('${cpu cpu0}')
 	-- cpu0_percent_stats = string.format('cpu0: %s%%', cpu0_percent_str)
